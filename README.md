@@ -27,7 +27,7 @@ CHR files contain tile/character graphics data for NES (Nintendo Entertainment S
 CHRplunk can open NES ROM files (.nes) in iNES format and extract CHR data:
 
 - **Automatic detection**: Simply open a .nes file and CHRplunk will parse it
-- **Multiple banks**: If the ROM has multiple CHR banks, you'll be prompted to select which one to view
+- **Visual bank selector**: Multiple CHR banks are shown with tile previews for easy identification
 - **ROM information**: View details about the ROM (mapper, PRG/CHR sizes, mirroring)
 - **CHR RAM detection**: ROMs that use CHR RAM instead of CHR ROM are detected and reported
 

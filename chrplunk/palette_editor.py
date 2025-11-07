@@ -62,15 +62,27 @@ class PaletteEditor(Gtk.Box):
 
     def create_color_row(self, index):
         """Create a row for a single color"""
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        # Descriptive color names for NES palette context
+        color_names = ['Background', 'Shadow', 'Base', 'Highlight']
+
+        row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
         row.set_margin_top(5)
         row.set_margin_bottom(5)
 
-        # Color label
-        label = Gtk.Label(label=f'Color {index}:')
-        label.set_width_chars(8)
-        label.set_xalign(0)
-        row.append(label)
+        # Color label with descriptive name
+        label_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        label = Gtk.Label(label=color_names[index])
+        label.set_halign(Gtk.Align.START)
+        label.add_css_class('heading')
+        label_box.append(label)
+
+        # Color index badge
+        badge = Gtk.Label(label=f'{index}')
+        badge.add_css_class('dim-label')
+        badge.set_halign(Gtk.Align.START)
+        label_box.append(badge)
+
+        row.append(label_box)
 
         # Color button
         color_btn = Gtk.Button()

@@ -2,8 +2,9 @@
 
 import gi
 gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
 
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, GObject, Adw
 from chrplunk.chr_format import CHRFile, NES_PALETTE
 
 class TileViewer(Gtk.DrawingArea):
@@ -186,7 +187,7 @@ class TileViewer(Gtk.DrawingArea):
         self.queue_draw()
 
 
-class TileEditorDialog(Gtk.Window):
+class TileEditorDialog(Adw.Window):
     """Dialog for editing a single tile with a larger view"""
 
     __gsignals__ = {
@@ -198,7 +199,6 @@ class TileEditorDialog(Gtk.Window):
 
         self.set_transient_for(parent)
         self.set_modal(True)
-        self.set_title(f'Edit Tile {tile_idx}')
         self.set_default_size(500, 550)
 
         self.chr_file = chr_file
@@ -208,7 +208,26 @@ class TileEditorDialog(Gtk.Window):
         self.scale = 20
         self.selected_color = 0
 
-        # Create layout
+        # Create header bar
+        header = Adw.HeaderBar()
+        header.set_title_widget(Gtk.Label(label=f'Edit Tile {tile_idx}'))
+
+        # Cancel button
+        cancel_btn = Gtk.Button(label='Cancel')
+        cancel_btn.connect('clicked', lambda x: self.close())
+        header.pack_start(cancel_btn)
+
+        # Save button
+        save_btn = Gtk.Button(label='Save')
+        save_btn.add_css_class('suggested-action')
+        save_btn.connect('clicked', self.on_save)
+        header.pack_end(save_btn)
+
+        # Create toolbar view
+        toolbar_view = Adw.ToolbarView()
+        toolbar_view.add_top_bar(header)
+
+        # Create content layout
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         box.set_margin_start(10)
         box.set_margin_end(10)
@@ -274,23 +293,9 @@ class TileEditorDialog(Gtk.Window):
 
         box.append(palette_box)
 
-        # Buttons
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-        button_box.set_halign(Gtk.Align.END)
-        button_box.set_margin_top(10)
-
-        cancel_btn = Gtk.Button(label='Cancel')
-        cancel_btn.connect('clicked', lambda x: self.close())
-        button_box.append(cancel_btn)
-
-        save_btn = Gtk.Button(label='Save')
-        save_btn.add_css_class('suggested-action')
-        save_btn.connect('clicked', self.on_save)
-        button_box.append(save_btn)
-
-        box.append(button_box)
-
-        self.set_child(box)
+        # Set content
+        toolbar_view.set_content(box)
+        self.set_content(toolbar_view)
 
     def on_draw(self, area, cr, width, height):
         """Draw the tile"""
