@@ -30,6 +30,11 @@ class CHRFile:
             data = f.read()
         return cls(data)
 
+    @classmethod
+    def from_bytes(cls, data: bytes) -> 'CHRFile':
+        """Create CHR file from raw bytes"""
+        return cls(data)
+
     def save(self, filepath: str):
         """Save CHR file to disk"""
         with open(filepath, 'wb') as f:

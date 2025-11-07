@@ -1,6 +1,6 @@
 # CHRplunk
 
-A native GNOME application for editing NES CHR (Character/Tile Graphics) files.
+A native GNOME application for editing NES CHR (Character/Tile Graphics) files and viewing CHR data from NES ROMs.
 
 ![GNOME](https://img.shields.io/badge/GNOME-native-blue)
 ![GTK4](https://img.shields.io/badge/GTK-4-green)
@@ -9,6 +9,8 @@ A native GNOME application for editing NES CHR (Character/Tile Graphics) files.
 ## Features
 
 - **View CHR files**: Display all tiles in a CHR file as an organized grid
+- **Open NES ROMs**: Extract and view CHR data directly from NES ROM files (.nes)
+- **Multiple CHR banks**: Select which CHR bank to view when ROMs have multiple banks
 - **Edit tiles**: Double-click any tile to open a detailed pixel editor
 - **Paint mode**: Click and drag to paint individual pixels
 - **Customizable color palette**: Edit the 4-color palette with a built-in color picker
@@ -19,6 +21,17 @@ A native GNOME application for editing NES CHR (Character/Tile Graphics) files.
 ## What are CHR files?
 
 CHR files contain tile/character graphics data for NES (Nintendo Entertainment System) games. Each tile is 8x8 pixels with 2 bits per pixel (4 colors). These files are used in NES ROM development and emulation.
+
+## NES ROM Support
+
+CHRplunk can open NES ROM files (.nes) in iNES format and extract CHR data:
+
+- **Automatic detection**: Simply open a .nes file and CHRplunk will parse it
+- **Multiple banks**: If the ROM has multiple CHR banks, you'll be prompted to select which one to view
+- **ROM information**: View details about the ROM (mapper, PRG/CHR sizes, mirroring)
+- **CHR RAM detection**: ROMs that use CHR RAM instead of CHR ROM are detected and reported
+
+Note: CHRplunk is read-only for NES ROMs. To save changes, export the CHR data to a standalone .chr file.
 
 ## Quick Start
 
@@ -35,11 +48,16 @@ sudo apt install python3 python3-gi gir1.2-gtk-4.0 gir1.2-adwaita-1
 ./run.sh /path/to/file.chr
 ```
 
-### Create a sample CHR file for testing
+### Create sample files for testing
 
 ```bash
+# Create a standalone CHR file
 python3 create_sample_chr.py sample.chr
 ./run.sh sample.chr
+
+# Create a sample NES ROM with CHR data
+python3 create_sample_rom.py sample.nes
+./run.sh sample.nes
 ```
 
 ## Installation
@@ -48,16 +66,18 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions for various 
 
 ## Usage
 
-1. **Open a CHR file**: Click the folder icon in the header bar or use Ctrl+O
+1. **Open a file**: Click the folder icon in the header bar or use Ctrl+O
+   - Open standalone CHR files (.chr)
+   - Open NES ROM files (.nes) - select CHR bank if multiple banks exist
 2. **View tiles**: All tiles are displayed in a grid (16 tiles per row by default)
 3. **Customize colors**: Use the palette editor on the right to change any of the 4 colors
 4. **Edit a tile**: Double-click any tile to open the tile editor
 5. **Paint pixels**: In the tile editor, select a color and click/drag to paint
-6. **Save changes**: Click the save icon or use Ctrl+S
+6. **Save changes**: Click the save icon or use Ctrl+S (CHR files only)
 
 ## Keyboard Shortcuts
 
-- `Ctrl+O` - Open CHR file
+- `Ctrl+O` - Open CHR file or NES ROM
 - `Ctrl+S` - Save current file
 - `Ctrl+Shift+S` - Save as
 - `Ctrl+Q` - Quit application
@@ -65,8 +85,11 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions for various 
 ## Technical Details
 
 - **Built with**: Python, GTK4, libadwaita
-- **Supported formats**: Standard NES CHR files (.chr)
+- **Supported formats**:
+  - Standard NES CHR files (.chr)
+  - NES ROM files in iNES format (.nes)
 - **Tile format**: 8x8 pixels, 2 bits per pixel, 16 bytes per tile
+- **CHR ROM parsing**: Supports multiple 8KB CHR banks, mapper detection, ROM info display
 
 ## Development
 

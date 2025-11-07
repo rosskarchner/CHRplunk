@@ -8,6 +8,9 @@ from gi.repository import Gtk, Adw, Gio, GLib, GdkPixbuf, Gdk
 from chrplunk.chr_format import CHRFile, NES_PALETTE
 from chrplunk.tile_viewer import TileViewer
 from chrplunk.palette_editor import PaletteEditor
+from chrplunk.nes_rom import NESRom, NESRomError
+from chrplunk.bank_selector import BankSelectorDialog, RomInfoDialog
+import os
 
 class MainWindow(Adw.ApplicationWindow):
     """Main application window"""
@@ -97,20 +100,34 @@ class MainWindow(Adw.ApplicationWindow):
     def show_open_dialog(self):
         """Show file open dialog"""
         dialog = Gtk.FileDialog()
-        dialog.set_title('Open CHR File')
+        dialog.set_title('Open CHR File or NES ROM')
 
-        # Create file filter
+        # Create file filters
         filter_chr = Gtk.FileFilter()
         filter_chr.set_name('CHR files')
         filter_chr.add_pattern('*.chr')
         filter_chr.add_mime_type('application/x-nes-chr')
+
+        filter_nes = Gtk.FileFilter()
+        filter_nes.set_name('NES ROM files')
+        filter_nes.add_pattern('*.nes')
+        filter_nes.add_pattern('*.NES')
+        filter_nes.add_mime_type('application/x-nes-rom')
+
+        filter_all_supported = Gtk.FileFilter()
+        filter_all_supported.set_name('All supported files')
+        filter_all_supported.add_pattern('*.chr')
+        filter_all_supported.add_pattern('*.nes')
+        filter_all_supported.add_pattern('*.NES')
 
         filter_all = Gtk.FileFilter()
         filter_all.set_name('All files')
         filter_all.add_pattern('*')
 
         filters = Gio.ListStore.new(Gtk.FileFilter)
+        filters.append(filter_all_supported)
         filters.append(filter_chr)
+        filters.append(filter_nes)
         filters.append(filter_all)
         dialog.set_filters(filters)
 
@@ -127,21 +144,25 @@ class MainWindow(Adw.ApplicationWindow):
                 print(f'Error opening file: {e.message}')
 
     def open_file(self, filepath: str):
-        """Open a CHR file"""
+        """Open a CHR file or NES ROM"""
         try:
-            self.chr_file = CHRFile.from_file(filepath)
-            self.current_filepath = filepath
-            self.tile_viewer.set_chr_file(self.chr_file, self.current_palette)
-            self.stack.set_visible_child_name('viewer')
+            # Check file extension to determine type
+            ext = os.path.splitext(filepath)[1].lower()
 
-            # Update window title
-            import os
-            filename = os.path.basename(filepath)
-            self.set_title(f'{filename} - CHRplunk')
+            if ext == '.nes':
+                self.open_nes_rom(filepath)
+            else:
+                # Assume CHR file
+                self.open_chr_file(filepath)
 
-            # Resize window to fit content (with palette editor width added)
-            self.resize_to_content()
-
+        except NESRomError as e:
+            dialog = Adw.MessageDialog(
+                transient_for=self,
+                heading='Error opening NES ROM',
+                body=str(e)
+            )
+            dialog.add_response('ok', 'OK')
+            dialog.present()
         except Exception as e:
             dialog = Adw.MessageDialog(
                 transient_for=self,
@@ -150,6 +171,72 @@ class MainWindow(Adw.ApplicationWindow):
             )
             dialog.add_response('ok', 'OK')
             dialog.present()
+
+    def open_chr_file(self, filepath: str):
+        """Open a standalone CHR file"""
+        self.chr_file = CHRFile.from_file(filepath)
+        self.current_filepath = filepath
+        self.tile_viewer.set_chr_file(self.chr_file, self.current_palette)
+        self.stack.set_visible_child_name('viewer')
+
+        # Update window title
+        filename = os.path.basename(filepath)
+        self.set_title(f'{filename} - CHRplunk')
+
+        # Resize window to fit content
+        self.resize_to_content()
+
+    def open_nes_rom(self, filepath: str):
+        """Open a NES ROM file and extract CHR data"""
+        rom = NESRom(filepath)
+
+        if not rom.has_chr_rom():
+            # Show info dialog for ROMs with CHR RAM
+            info_dialog = RomInfoDialog(self, rom)
+            info_dialog.present()
+            return
+
+        if rom.get_chr_bank_count() == 1:
+            # Single CHR bank, open directly
+            chr_data = rom.get_chr_bank(0)
+            self.load_chr_data(chr_data, filepath, 0)
+        else:
+            # Multiple CHR banks, show selector
+            selector = BankSelectorDialog(self, rom)
+            selector.connect('bank-selected', lambda d, bank: self.load_chr_from_rom(filepath, bank))
+            selector.present()
+
+    def load_chr_from_rom(self, filepath: str, bank_index: int):
+        """Load a specific CHR bank from a NES ROM"""
+        try:
+            rom = NESRom(filepath)
+            chr_data = rom.get_chr_bank(bank_index)
+            self.load_chr_data(chr_data, filepath, bank_index)
+        except Exception as e:
+            dialog = Adw.MessageDialog(
+                transient_for=self,
+                heading='Error loading CHR bank',
+                body=str(e)
+            )
+            dialog.add_response('ok', 'OK')
+            dialog.present()
+
+    def load_chr_data(self, chr_data: bytes, source_filepath: str, bank_index: int = None):
+        """Load CHR data from bytes"""
+        self.chr_file = CHRFile.from_bytes(chr_data)
+        self.current_filepath = source_filepath
+        self.tile_viewer.set_chr_file(self.chr_file, self.current_palette)
+        self.stack.set_visible_child_name('viewer')
+
+        # Update window title
+        filename = os.path.basename(source_filepath)
+        if bank_index is not None:
+            self.set_title(f'{filename} [Bank {bank_index}] - CHRplunk')
+        else:
+            self.set_title(f'{filename} - CHRplunk')
+
+        # Resize window to fit content
+        self.resize_to_content()
 
     def resize_to_content(self):
         """Resize window to fit the loaded CHR file content"""
