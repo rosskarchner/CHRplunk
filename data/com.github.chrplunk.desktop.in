@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=CHRplunk
+Comment=NES graphics editor for GNOME
+Exec=chrplunk
+Icon=com.github.chrplunk
+Terminal=false
+Type=Application
+Categories=Graphics;GTK;GNOME;
+MimeType=application/x-nes-chr;
+Keywords=NES;CHR;Graphics;Editor;Tiles;

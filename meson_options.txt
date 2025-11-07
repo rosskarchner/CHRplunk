@@ -1,0 +1,1 @@
+option('prefix', type: 'string', value: '/usr/local', description: 'Installation prefix')

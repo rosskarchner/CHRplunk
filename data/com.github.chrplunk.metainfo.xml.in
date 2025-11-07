@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.chrplunk</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>CHRplunk</name>
+  <summary>NES graphics editor for GNOME</summary>
+  <description>
+    <p>
+      CHRplunk is a native GNOME application for editing NES CHR (Character) graphics files.
+      You can open, view, edit, and save NES tile data with an easy-to-use interface.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.github.chrplunk.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main window</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/rosskarchner/CHRplunk</url>
+  <url type="bugtracker">https://github.com/rosskarchner/CHRplunk/issues</url>
+  <developer_name>CHRplunk Contributors</developer_name>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2025-11-07"/>
+  </releases>
+</component>
