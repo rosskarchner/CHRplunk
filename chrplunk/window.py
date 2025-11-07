@@ -5,8 +5,9 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
 from gi.repository import Gtk, Adw, Gio, GLib, GdkPixbuf, Gdk
-from chrplunk.chr_format import CHRFile
+from chrplunk.chr_format import CHRFile, NES_PALETTE
 from chrplunk.tile_viewer import TileViewer
+from chrplunk.palette_editor import PaletteEditor
 
 class MainWindow(Adw.ApplicationWindow):
     """Main application window"""
@@ -16,6 +17,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.chr_file = None
         self.current_filepath = None
+        self.current_palette = list(NES_PALETTE)  # Current palette (mutable copy)
 
         # Set up window
         self.set_title('CHRplunk')
@@ -59,6 +61,20 @@ class MainWindow(Adw.ApplicationWindow):
         self.tile_viewer = TileViewer()
         scrolled.set_child(self.tile_viewer)
 
+        # Create palette editor
+        self.palette_editor = PaletteEditor(self.current_palette)
+        self.palette_editor.connect('palette-changed', self.on_palette_changed)
+
+        # Create horizontal paned for tile viewer and palette
+        paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+        paned.set_start_child(scrolled)
+        paned.set_end_child(self.palette_editor)
+        paned.set_shrink_start_child(False)
+        paned.set_shrink_end_child(False)
+        paned.set_resize_start_child(True)
+        paned.set_resize_end_child(False)
+        paned.set_position(600)  # Initial position
+
         # Create status page for empty state
         self.status_page = Adw.StatusPage(
             title='No CHR file loaded',
@@ -69,7 +85,7 @@ class MainWindow(Adw.ApplicationWindow):
         # Create stack to switch between empty state and viewer
         self.stack = Gtk.Stack()
         self.stack.add_named(self.status_page, 'empty')
-        self.stack.add_named(scrolled, 'viewer')
+        self.stack.add_named(paned, 'viewer')
         self.stack.set_visible_child_name('empty')
 
         self.toolbox.set_content(self.stack)
@@ -115,13 +131,16 @@ class MainWindow(Adw.ApplicationWindow):
         try:
             self.chr_file = CHRFile.from_file(filepath)
             self.current_filepath = filepath
-            self.tile_viewer.set_chr_file(self.chr_file)
+            self.tile_viewer.set_chr_file(self.chr_file, self.current_palette)
             self.stack.set_visible_child_name('viewer')
 
             # Update window title
             import os
             filename = os.path.basename(filepath)
             self.set_title(f'{filename} - CHRplunk')
+
+            # Resize window to fit content (with palette editor width added)
+            self.resize_to_content()
 
         except Exception as e:
             dialog = Adw.MessageDialog(
@@ -131,6 +150,33 @@ class MainWindow(Adw.ApplicationWindow):
             )
             dialog.add_response('ok', 'OK')
             dialog.present()
+
+    def resize_to_content(self):
+        """Resize window to fit the loaded CHR file content"""
+        if not self.chr_file:
+            return
+
+        # Calculate content size
+        tile_size = self.tile_viewer.tile_size
+        tiles_per_row = self.tile_viewer.tiles_per_row
+        rows = (self.chr_file.tile_count + tiles_per_row - 1) // tiles_per_row
+
+        # Calculate ideal window size
+        content_width = tiles_per_row * tile_size
+        content_height = rows * tile_size
+
+        # Add palette editor width and some padding
+        palette_width = 250
+        total_width = content_width + palette_width + 40
+
+        # Add header bar height and padding
+        total_height = content_height + 100
+
+        # Clamp to reasonable min/max sizes
+        total_width = max(600, min(total_width, 1400))
+        total_height = max(400, min(total_height, 1000))
+
+        self.set_default_size(total_width, total_height)
 
     def save_file(self):
         """Save the current file"""
@@ -217,3 +263,9 @@ class MainWindow(Adw.ApplicationWindow):
         """Handle tile edit event"""
         if self.chr_file:
             self.chr_file.set_tile(tile_index, tile_data)
+
+    def on_palette_changed(self, palette_editor, new_palette):
+        """Handle palette change event"""
+        self.current_palette = new_palette
+        if self.chr_file:
+            self.tile_viewer.set_palette(new_palette)

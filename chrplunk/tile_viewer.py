@@ -17,6 +17,7 @@ class TileViewer(Gtk.DrawingArea):
         super().__init__()
 
         self.chr_file = None
+        self.palette = list(NES_PALETTE)  # Current palette
         self.scale = 3
         self.tiles_per_row = 16
         self.tile_size = 8 * self.scale
@@ -40,10 +41,13 @@ class TileViewer(Gtk.DrawingArea):
         self.set_content_width(self.tiles_per_row * self.tile_size)
         self.set_content_height(256)
 
-    def set_chr_file(self, chr_file: CHRFile):
+    def set_chr_file(self, chr_file: CHRFile, palette=None):
         """Set the CHR file to display"""
         self.chr_file = chr_file
         self.selected_tile = None
+
+        if palette:
+            self.palette = palette
 
         # Update size
         if chr_file and chr_file.tile_count > 0:
@@ -51,6 +55,11 @@ class TileViewer(Gtk.DrawingArea):
             height = rows * self.tile_size
             self.set_content_height(height)
 
+        self.queue_draw()
+
+    def set_palette(self, palette):
+        """Update the palette and redraw"""
+        self.palette = palette
         self.queue_draw()
 
     def on_draw(self, area, cr, width, height):
@@ -91,7 +100,7 @@ class TileViewer(Gtk.DrawingArea):
         for y in range(8):
             for x in range(8):
                 color_idx = tile[y][x]
-                color = NES_PALETTE[color_idx % len(NES_PALETTE)]
+                color = self.palette[color_idx % len(self.palette)]
                 cr.set_source_rgb(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
 
                 px = x_offset + x * self.scale
@@ -166,7 +175,7 @@ class TileViewer(Gtk.DrawingArea):
 
     def show_tile_editor(self, tile_idx):
         """Show tile editor dialog"""
-        dialog = TileEditorDialog(self.get_root(), self.chr_file, tile_idx)
+        dialog = TileEditorDialog(self.get_root(), self.chr_file, tile_idx, self.palette)
         dialog.connect('tile-changed', self.on_tile_changed)
         dialog.present()
 
@@ -184,7 +193,7 @@ class TileEditorDialog(Gtk.Window):
         'tile-changed': (GObject.SignalFlags.RUN_FIRST, None, (int, object))
     }
 
-    def __init__(self, parent, chr_file, tile_idx):
+    def __init__(self, parent, chr_file, tile_idx, palette=None):
         super().__init__()
 
         self.set_transient_for(parent)
@@ -195,6 +204,7 @@ class TileEditorDialog(Gtk.Window):
         self.chr_file = chr_file
         self.tile_idx = tile_idx
         self.tile_data = [row[:] for row in chr_file.get_tile(tile_idx)]  # Deep copy
+        self.palette = palette if palette else list(NES_PALETTE)
         self.scale = 20
         self.selected_color = 0
 
@@ -244,7 +254,7 @@ class TileEditorDialog(Gtk.Window):
             drawing = Gtk.DrawingArea()
             drawing.set_content_width(40)
             drawing.set_content_height(40)
-            color = NES_PALETTE[i]
+            color = self.palette[i]
             drawing.set_draw_func(lambda area, cr, w, h, col=color:
                                   (cr.set_source_rgb(col[0]/255, col[1]/255, col[2]/255),
                                    cr.rectangle(0, 0, w, h),
@@ -292,7 +302,7 @@ class TileEditorDialog(Gtk.Window):
         for y in range(8):
             for x in range(8):
                 color_idx = self.tile_data[y][x]
-                color = NES_PALETTE[color_idx % len(NES_PALETTE)]
+                color = self.palette[color_idx % len(self.palette)]
                 cr.set_source_rgb(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
 
                 px = x * self.scale

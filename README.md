@@ -11,7 +11,8 @@ A native GNOME application for editing NES CHR (Character/Tile Graphics) files.
 - **View CHR files**: Display all tiles in a CHR file as an organized grid
 - **Edit tiles**: Double-click any tile to open a detailed pixel editor
 - **Paint mode**: Click and drag to paint individual pixels
-- **Color palette**: Work with the standard NES 2-bit color palette
+- **Customizable color palette**: Edit the 4-color palette with a built-in color picker
+- **Smart window sizing**: Window automatically resizes to fit the loaded CHR file
 - **Save changes**: Save your edits back to CHR files
 - **Native GNOME experience**: Built with GTK4 and libadwaita for a modern GNOME interface
 
@@ -49,9 +50,10 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions for various 
 
 1. **Open a CHR file**: Click the folder icon in the header bar or use Ctrl+O
 2. **View tiles**: All tiles are displayed in a grid (16 tiles per row by default)
-3. **Edit a tile**: Double-click any tile to open the tile editor
-4. **Paint pixels**: In the tile editor, select a color and click/drag to paint
-5. **Save changes**: Click the save icon or use Ctrl+S
+3. **Customize colors**: Use the palette editor on the right to change any of the 4 colors
+4. **Edit a tile**: Double-click any tile to open the tile editor
+5. **Paint pixels**: In the tile editor, select a color and click/drag to paint
+6. **Save changes**: Click the save icon or use Ctrl+S
 
 ## Keyboard Shortcuts
 
