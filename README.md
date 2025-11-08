@@ -1,12 +1,41 @@
-# CHRplunk
+# CHRplunk NES IDE
 
-A native GNOME application for editing NES CHR (Character/Tile Graphics) files and viewing CHR data from NES ROMs.
+A comprehensive Integrated Development Environment (IDE) for Nintendo Entertainment System (NES) game development, built as a native GNOME application. Features project management, 6502 assembly editing with syntax highlighting, build system integration, and CHR graphics editing.
 
 ![GNOME](https://img.shields.io/badge/GNOME-native-blue)
 ![GTK4](https://img.shields.io/badge/GTK-4-green)
 ![Python](https://img.shields.io/badge/Python-3.8+-blue)
 
-## Features
+## IDE Features
+
+### Project Management
+- **Project system**: Create and manage NES development projects with `.nesproject` configuration
+- **Project templates**: Quick start with Empty, Hello World, and Platformer templates
+- **File organization**: Automatic directory structure (source, graphics, audio, data, build)
+- **Project sidebar**: Tree view of all project files
+
+### Code Editor
+- **6502 Assembly editing**: Full syntax highlighting for 6502 assembly language
+- **GtkSourceView integration**: Professional code editing experience
+- **Multiple tabs**: Work on multiple files simultaneously
+- **Line numbers**: Easy code navigation
+- **Monospace font**: Optimized for code reading
+
+### Build System
+- **ca65 support**: Integrated CC65 assembler and linker
+- **asm6 support**: Alternative assembler support
+- **Build configurations**: Debug and Release configurations
+- **Build output panel**: See compiler messages in real-time
+- **Error parsing**: Click errors to jump to source location
+- **One-click builds**: F7 to build, F5 to build and run
+
+### Multi-Panel Architecture
+- **Sidebar**: Project file tree
+- **Main editor**: Tabbed code editor
+- **Bottom panel**: Build output, console, and problem list
+- **Resizable panels**: Customize your workspace
+
+## Graphics Editor Features
 
 - **View CHR files**: Display all tiles in a CHR file as an organized grid
 - **Open NES ROMs**: Extract and view CHR data directly from NES ROM files (.nes)
@@ -77,6 +106,16 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions for various 
 
 ## Keyboard Shortcuts
 
+### IDE Mode
+- `F5` - Build and Run
+- `F7` - Build Project
+- `Ctrl+S` - Save current file
+- `Ctrl+Shift+S` - Save all files
+- `Ctrl+O` - Open file
+- `Ctrl+,` - Preferences
+- `Ctrl+Q` - Quit application
+
+### Graphics Editor Mode
 - `Ctrl+O` - Open CHR file or NES ROM
 - `Ctrl+S` - Save current file
 - `Ctrl+Shift+S` - Save as

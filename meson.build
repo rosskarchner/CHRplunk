@@ -18,6 +18,11 @@ pkgdatadir = datadir / meson.project_name()
 install_subdir('chrplunk', install_dir: python_installation.get_install_dir())
 install_data('chrplunk-app.py', install_dir: bindir, rename: 'chrplunk')
 
+# Install language specs for GtkSourceView
+install_subdir('data/language-specs',
+               install_dir: datadir / 'gtksourceview-5' / 'language-specs',
+               strip_directory: true)
+
 subdir('data')
 
 gnome.post_install(
